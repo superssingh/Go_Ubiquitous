@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Created by Santosh Kumar Singh on 18/04/2016 on 6:18 PM
+  ~ Copyright (c) 2016 All rights reserved.
+  ~
+  ~  Last modified 11/24/16 12:20 AM
+  ~
+  -->
+
+<resources>
+    <color name="background">#14a2b4</color>
+    <color name="digital_text">#ffffff</color>
+</resources>

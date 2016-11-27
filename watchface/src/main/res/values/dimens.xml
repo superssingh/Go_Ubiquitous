@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Created by Santosh Kumar Singh on 18/04/2016 on 6:18 PM
+  ~ Copyright (c) 2016 All rights reserved.
+  ~
+  ~  Last modified 11/24/16 12:20 AM
+  ~
+  -->
+
+<resources>
+    <dimen name="digital_text_size">40dp</dimen>
+    <dimen name="digital_text_size_round">45dp</dimen>
+    <dimen name="digital_x_offset">15dp</dimen>
+    <dimen name="digital_x_offset_round">25dp</dimen>
+    <dimen name="digital_y_offset">85dp</dimen>
+
+    <dimen name="time_text_size">26dp</dimen>
+    <dimen name="time_text_size_round">18dp</dimen>
+    <dimen name="date_text_size">14dp</dimen>
+    <dimen name="date_text_size_round">20dp</dimen>
+    <dimen name="temperature_text_size">12dp</dimen>
+    <dimen name="temperature_text_size_round">16dp</dimen>
+
+</resources>

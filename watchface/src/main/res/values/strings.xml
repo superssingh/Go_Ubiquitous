@@ -1,0 +1,13 @@
+<!--
+  ~ Created by Santosh Kumar Singh on 18/04/2016 on 6:18 PM
+  ~ Copyright (c) 2016 All rights reserved.
+  ~
+  ~  Last modified 11/24/16 12:20 AM
+  ~
+  -->
+
+<resources>
+    <string name="app_name">Watchface</string>
+    <string name="message">Watch face tapped</string>
+    <string name="my_digital_name">Sunshine</string>
+</resources>
