@@ -667,7 +667,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        sendIntoWatchface();
+        notifyWatchface();
     }
 
     @Override
@@ -680,7 +680,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
     }
 
-    private void sendIntoWatchface() {
+    private void notifyWatchface() {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/wear_face").setUrgent();
 
         putDataMapReq.getDataMap().putString("HIGH_TEMP", "" + Math.round(HighTemp));
