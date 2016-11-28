@@ -48,6 +48,9 @@ import java.util.concurrent.TimeUnit;
 
 import static android.support.wearable.watchface.WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE;
 import static android.support.wearable.watchface.WatchFaceStyle.PEEK_MODE_VARIABLE;
+import static com.example.android.sunshine.app.Utilities.day;
+import static com.example.android.sunshine.app.Utilities.getWeatherIcon;
+import static com.example.android.sunshine.app.Utilities.month;
 
 /**
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
@@ -96,7 +99,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
         final Handler mUpdateTime = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
         Paint mBackgroundPaint;
-        Paint mTextPaint, mDatePaint, mWeatherPaint, mTempraturePaint;
+        Paint mTextPaint, mDatePaint, mWeatherPaint, HighTempPaint, LowTempPaint;
         boolean mAmbient;
         Calendar mCalendar;
 
@@ -118,11 +121,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
          */
         boolean mLowBitAmbient;
         private GoogleApiClient googleApiClient;
-        private Bitmap mBackgroundBitmap;
         /* Colors for all hands (hour, minute, seconds, ticks) based on photo loaded. */
-        private int mWatchHandColor;
-        private int mWatchHandHighlightColor;
-        private int mWatchHandShadowColor;
+
         @Override
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
@@ -142,11 +142,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
 
-            mTempraturePaint = new Paint();
-            mTempraturePaint = createTextPaint(resources.getColor(R.color.digital_text));
-
             mDatePaint = new Paint();
             mDatePaint = createTextPaint(resources.getColor(R.color.digital_text));
+
+            HighTempPaint = new Paint();
+            HighTempPaint = createTextPaint(resources.getColor(R.color.digital_text));
+
+            LowTempPaint = new Paint();
+            LowTempPaint = createTextPaint(resources.getColor(R.color.digital_text));
 
             mWeatherPaint= new Paint();
             mWeatherPaint = createTextPaint(resources.getColor(R.color.digital_text));
@@ -223,9 +226,9 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
 
             mTextPaint.setTextSize(textSize);
-            mDatePaint.setTextSize(textSize/5);
-            mWeatherPaint.setTextSize(textSize/2);
-            mTempraturePaint.setTextSize(textSize/4);
+            mDatePaint.setTextSize(textSize / 3);
+            HighTempPaint.setTextSize(textSize / 2);
+            LowTempPaint.setTextSize(textSize / 2);
         }
 
         @Override
@@ -249,7 +252,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     mTextPaint.setAntiAlias(!inAmbientMode);
                     mDatePaint.setAntiAlias(!inAmbientMode);
                     mWeatherPaint.setAntiAlias(!inAmbientMode);
-                    mTempraturePaint.setAntiAlias(!inAmbientMode);
+                    HighTempPaint.setAntiAlias(!inAmbientMode);
+                    LowTempPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
             }
@@ -285,36 +289,31 @@ public class MyWatchFace extends CanvasWatchFaceService {
             } else {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
-
+            int padding = 16;
+            int timeYOffset = bounds.centerY() - 25;
             long now = System.currentTimeMillis();
             mCalendar.setTimeInMillis(now);
             String text =  String.format("%02d:%02d", mCalendar.get(Calendar.HOUR),
                     mCalendar.get(Calendar.MINUTE));
-            canvas.drawText(text, bounds.width()/4, bounds.height()/2, mTextPaint);
+            canvas.drawText(text, bounds.width() / 4, timeYOffset, mTextPaint);
 
-            float lowerYOffset = mYOffset + mTextPaint.getTextSize() + 20;
+            float lowerYOffsetTime = timeYOffset + mDatePaint.getTextSize() + padding;
 
             canvas.drawText(mCalendar.get(Calendar.DAY_OF_MONTH) + " " +
                             month(mCalendar.get(Calendar.MONTH)) + " " +
                             new String(mCalendar.get(Calendar.YEAR)+"").substring(2,4) + ", " +
                             day(mCalendar.get(Calendar.DAY_OF_WEEK))
-                    , (bounds.width()/3), lowerYOffset-35, mDatePaint);
+                    , bounds.width() / 4, lowerYOffsetTime, mDatePaint);
 
+            float lowerYOffsetDate = lowerYOffsetTime + HighTempPaint.getTextSize() + padding;
             if(!isInAmbientMode()) {
                 int icon = getWeatherIcon(weatherId);
                 Bitmap weatherIcon = BitmapFactory.decodeResource(getResources(), icon);
-                canvas.drawBitmap(weatherIcon, (bounds.width()/5), bounds.height()/10-10, mWeatherPaint);
+                canvas.drawBitmap(weatherIcon, (bounds.width() / 6), lowerYOffsetTime, mWeatherPaint);
             }
 
-            int absoluteTemp = (Integer.parseInt(maxTemp) +Integer.parseInt(minTemp))/2;
-            int rowPosition=bounds.centerX()+5;
-
-            canvas.drawText(getWeatherName(weatherId), bounds.centerX(), bounds.height()/4, mTempraturePaint);
-            canvas.drawText(absoluteTemp+"\u00b0"+"C", bounds.width()/3-30, lowerYOffset+30, mWeatherPaint);
-            canvas.drawLine(rowPosition, lowerYOffset-10, rowPosition,lowerYOffset+50, mTextPaint);
-            canvas.drawLine(rowPosition, lowerYOffset+20, rowPosition+(rowPosition/2),lowerYOffset+20, mTextPaint);
-            canvas.drawText(maxTemp+"\u00b0"+"C max", rowPosition+10, lowerYOffset+10, mTempraturePaint);
-            canvas.drawText(minTemp+"\u00b0"+"C min", rowPosition+10, lowerYOffset+45, mTempraturePaint);
+            canvas.drawText(maxTemp + "\u00b0 ", bounds.centerX(), lowerYOffsetDate, HighTempPaint);
+            canvas.drawText(minTemp + "\u00b0", bounds.centerX() + HighTempPaint.getTextSize() + (padding), lowerYOffsetDate, LowTempPaint);
 
         }
 
@@ -390,125 +389,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     weatherId = dataMap.getInt("WEATHER_ID");
             }
         }
-        private void updateWatchHandStyle(){
-                mTextPaint.setColor(mWatchHandColor);
-                mDatePaint.setColor(mWatchHandColor);
-                mWeatherPaint.setColor(mWatchHandHighlightColor);
-                mTempraturePaint.setColor(mWatchHandColor);
 
-                mTextPaint.setAntiAlias(true);
-                mDatePaint.setAntiAlias(true);
-                mWeatherPaint.setAntiAlias(true);
-                mTempraturePaint.setAntiAlias(true);
-        }
     }
 
-    public static int getWeatherIcon(int weatherId) {
-        // Based on weather code data found at:
-        // http://bugs.openweathermap.org/projects/api/wiki/Weather_Condition_Codes
-        if (weatherId >= 200 && weatherId <= 232) {
-            return R.drawable.ic_storm;
-        } else if (weatherId >= 300 && weatherId <= 321) {
-            return R.drawable.ic_light_rain;
-        } else if (weatherId >= 500 && weatherId <= 504) {
-            return R.drawable.ic_rain;
-        } else if (weatherId == 511) {
-            return R.drawable.ic_snow;
-        } else if (weatherId >= 520 && weatherId <= 531) {
-            return R.drawable.ic_rain;
-        } else if (weatherId >= 600 && weatherId <= 622) {
-            return R.drawable.ic_snow;
-        } else if (weatherId >= 701 && weatherId <= 761) {
-            return R.drawable.ic_fog;
-        } else if (weatherId == 761 || weatherId == 781) {
-            return R.drawable.ic_storm;
-        } else if (weatherId == 800) {
-            return R.drawable.ic_clear;
-        } else if (weatherId == 801) {
-            return R.drawable.ic_light_clouds;
-        } else if (weatherId >= 802 && weatherId <= 804) {
-            return R.drawable.ic_cloudy;
-        }
-        return R.drawable.ic_status;
-    }
-
-    public static String getWeatherName(int weatherId) {
-        // Based on weather code data found at:
-        // http://bugs.openweathermap.org/projects/api/wiki/Weather_Condition_Codes
-        if (weatherId >= 200 && weatherId <= 232) {
-            return "Thunderstorm";
-        } else if (weatherId >= 300 && weatherId <= 321) {
-            return "Drizzle";
-        } else if (weatherId >= 500 && weatherId <= 504) {
-            return "Rain";
-        } else if (weatherId == 511) {
-            return "Snow";
-        } else if (weatherId >= 520 && weatherId <= 531) {
-            return "Rain";
-        } else if (weatherId >= 600 && weatherId <= 622) {
-            return "Snow";
-        } else if (weatherId >= 701 && weatherId <= 761) {
-            return "Foggy";
-        } else if (weatherId == 761 || weatherId == 781) {
-            return "Storm";
-        } else if (weatherId == 800) {
-            return "Clear Sky";
-        } else if (weatherId == 801) {
-            return "Light Clouds";
-        } else if (weatherId >= 802 && weatherId <= 804) {
-            return "Cloudy";
-        }
-        return null;
-    }
-
-    public static String month(int month) {
-        if(month>=0 && month<=11) {
-            if (month == 0)
-                return "Jan";
-            else if (month == 1)
-                return "Feb";
-            else if (month == 2)
-                return "Mar";
-            else if (month == 3)
-                return "Apr";
-            else if (month == 4)
-                return "May";
-            else if (month == 5)
-                return "Jun";
-            else if (month == 6)
-                return "Jul";
-            else if (month == 7)
-                return "Aug";
-            else if (month == 8)
-                return "Sep";
-            else if (month == 9)
-                return "Oct";
-            else if (month == 10)
-                return "Nov";
-            else if (month == 11)
-                return "Dec";
-        }
-        return null;
-    }
-
-    public static String day(int day) {
-        if(day>=1 && day<=7) {
-            if (day == 1)
-                return "Sunday";
-            else if (day == 2)
-                return "Monday";
-            else if (day == 3)
-                return "Tuesday";
-            else if (day == 4)
-                return "Wednesday";
-            else if (day == 5)
-                return "Thursday";
-            else if (day == 6)
-                return "Friday";
-            else if (day == 7)
-                return "Saturday";
-        }
-        return null;
-    }
 
 }
