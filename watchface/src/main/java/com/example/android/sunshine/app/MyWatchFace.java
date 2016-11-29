@@ -112,7 +112,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
         };
         float mXOffset;
         float mYOffset;
-        String maxTemp = "24", minTemp = "15";
+        String maxTemp = "0", minTemp = "0";
         int weatherId = 200;
 
         /**
